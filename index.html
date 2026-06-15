@@ -10,7 +10,7 @@
         :root {
             --bg-global: #F8FAFC; --surface: #FFFFFF; --text-primary: #0F172A;
             --text-secondary: #475569; --brand-blue: #2563EB; --brand-green: #10B981;
-            --border-light: #E2E8F0; --radius-main: 16px;
+            --brand-red: #EF4444; --border-light: #E2E8F0; --radius-main: 16px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-global); color: var(--text-primary); padding-bottom: 5.5rem; }
@@ -25,15 +25,10 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; gap: 0.25rem; cursor: pointer; flex: 1; background: none; border: none; outline: none; }
         .nav-item i { font-size: 1.25rem; }
         .nav-item.active { color: var(--brand-blue); }
-        
+
         /* Nav User Avatar */
-        .nav-user-chip { position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .nav-user-chip { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
         .user-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--brand-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; letter-spacing: 0.02em; }
-        .user-dropdown { position: absolute; bottom: calc(100% + 0.8rem); right: 10px; background: var(--surface); border: 1px solid var(--border-light); border-radius: 12px; box-shadow: 0 -6px 28px rgba(15,23,42,0.12); min-width: 190px; padding: 0.75rem; display: none; flex-direction: column; gap: 0.5rem; z-index: 250; text-align: left; }
-        .user-dropdown.open { display: flex; }
-        .user-dropdown-name { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary); }
-        .user-dropdown-email { font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-bottom: 0.5rem; border-bottom: 1px solid #F1F5F9; }
-        .user-dropdown-logout { background: #FEF2F2; color: #B91C1C; border: none; padding: 0.55rem 0.75rem; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; width: 100%; }
 
         .auth-tabs { display: flex; background: #F1F5F9; border-radius: 10px; padding: 0.25rem; }
         .auth-tab { flex: 1; text-align: center; padding: 0.55rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; user-select: none; }
@@ -89,6 +84,7 @@
         .form-label { font-size: 0.82rem; font-weight: 600; }
         .form-input, .form-select { padding: 0.7rem 1rem; border: 1px solid var(--border-light); border-radius: 10px; font-size: 0.88rem; outline: none; color: var(--text-primary); background: #F8FAFC; }
         .form-input:focus, .form-select:focus { border-color: var(--brand-blue); background: white; }
+        .form-input:disabled { color: var(--text-secondary); cursor: not-allowed; }
         .file-drop-zone { border: 2px dashed var(--border-light); border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; color: var(--text-secondary); font-size: 0.85rem; }
         .file-drop-zone i { font-size: 1.5rem; display: block; margin-bottom: 0.5rem; }
         .file-drop-zone.file-selected { border-color: var(--brand-green); background: #ECFDF5; color: #065F46; }
@@ -130,6 +126,53 @@
         .toast.error { background: #7F1D1D; }
 
         #hidden-file-picker { display: none; }
+
+        /* ---- Profile Sheet ---- */
+        .profile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; display: none; align-items: flex-end; backdrop-filter: blur(4px); }
+        .profile-overlay.open { display: flex; }
+        .profile-sheet { background: var(--bg-global); width: 100%; max-height: 88vh; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; overflow: hidden; animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1); }
+        .profile-header { background: var(--surface); padding: 1.25rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border-light); flex-shrink: 0; position: relative; }
+        .profile-avatar-lg { width: 54px; height: 54px; border-radius: 50%; background: var(--brand-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; flex-shrink: 0; }
+        .profile-header-info { flex: 1; overflow: hidden; }
+        .profile-name { font-size: 1.05rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .profile-close-btn { background: #F1F5F9; border: none; color: var(--text-secondary); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+        .profile-body { flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1.25rem; }
+        .profile-section-title { font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+        .profile-card { background: var(--surface); border: 1px solid var(--border-light); border-radius: 14px; padding: 1rem; }
+        .college-id-row { display: flex; gap: 0.6rem; align-items: flex-end; }
+        .college-id-row .form-group { flex: 1; }
+        .btn-save-id { padding: 0.7rem 1rem; border-radius: 10px; border: none; background: var(--brand-blue); color: white; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .btn-save-id:disabled { background: #94A3B8; cursor: not-allowed; }
+        .college-id-display { display: flex; align-items: center; justify-content: space-between; }
+        .college-id-display .id-val { font-size: 0.95rem; font-weight: 700; }
+        .college-id-display .id-label { font-size: 0.78rem; color: var(--text-secondary); }
+        .edit-id-link { font-size: 0.78rem; color: var(--brand-blue); font-weight: 600; cursor: pointer; }
+
+        .my-upload-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 0; border-bottom: 1px solid #F1F5F9; }
+        .my-upload-row:last-child { border-bottom: none; }
+        .my-upload-icon { width: 38px; height: 38px; border-radius: 10px; background: #EFF6FF; color: var(--brand-blue); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .my-upload-info { flex: 1; overflow: hidden; }
+        .my-upload-title { font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .my-upload-meta { font-size: 0.75rem; color: var(--text-secondary); }
+        .my-upload-delete { background: #FEF2F2; color: var(--brand-red); border: none; width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+
+        .history-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 0; border-bottom: 1px solid #F1F5F9; }
+        .history-row:last-child { border-bottom: none; }
+        .history-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; }
+        .history-icon.view-type { background: #F1F5F9; color: var(--text-secondary); }
+        .history-icon.download-type { background: #ECFDF5; color: var(--brand-green); }
+        .history-info { flex: 1; overflow: hidden; }
+        .history-title { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .history-meta { font-size: 0.73rem; color: var(--text-secondary); }
+        .history-tag { font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 6px; flex-shrink: 0; }
+        .history-tag.view-type { background: #F1F5F9; color: var(--text-secondary); }
+        .history-tag.download-type { background: #ECFDF5; color: var(--brand-green); }
+
+        .profile-empty { text-align: center; padding: 1.25rem; color: var(--text-secondary); font-size: 0.82rem; }
+        .profile-empty i { font-size: 1.5rem; margin-bottom: 0.5rem; opacity: 0.4; display: block; }
+
+        .logout-card { background: #FEF2F2; border: 1px solid #FECACA; border-radius: 14px; padding: 0.9rem 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; color: #B91C1C; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
     </style></head><body><script>
     const CLOUDINARY_CLOUD_NAME = "dshqqlliz";
     const CLOUDINARY_UPLOAD_PRESET = "campusnotes_preset";
@@ -275,6 +318,64 @@
         </div>
     </div>
 
+    <!-- ---- Profile Bottom Sheet ---- -->
+    <div class="profile-overlay" id="profileOverlay" onclick="handleProfileOverlayClick(event)">
+        <div class="profile-sheet">
+            <div class="profile-header">
+                <div class="profile-avatar-lg" id="profileAvatarLg">--</div>
+                <div class="profile-header-info">
+                    <div class="profile-name" id="profileNameLg">--</div>
+                    <div class="profile-email" id="profileEmailLg">--</div>
+                </div>
+                <button class="profile-close-btn" onclick="closeProfileSheet()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="profile-body">
+
+                <div>
+                    <div class="profile-section-title"><i class="fa-solid fa-id-card" style="color:var(--brand-blue)"></i> College ID</div>
+                    <div class="profile-card">
+                        <div id="collegeIdViewMode" style="display:none">
+                            <div class="college-id-display">
+                                <div>
+                                    <div class="id-label">তোমার College ID</div>
+                                    <div class="id-val" id="collegeIdValue">--</div>
+                                </div>
+                                <span class="edit-id-link" onclick="toggleCollegeIdEdit(true)">Edit</span>
+                            </div>
+                        </div>
+                        <div id="collegeIdEditMode">
+                            <div class="college-id-row">
+                                <div class="form-group">
+                                    <label class="form-label">College ID (Optional)</label>
+                                    <input type="text" class="form-input" id="collegeIdInput" placeholder="e.g. 22-12345-1">
+                                </div>
+                                <button class="btn-save-id" id="saveCollegeIdBtn" onclick="saveCollegeId()">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="profile-section-title"><i class="fa-solid fa-file-pdf" style="color:var(--brand-blue)"></i> My Uploads</div>
+                    <div class="profile-card" id="myUploadsList">
+                        <div class="profile-empty"><i class="fa-regular fa-folder-open"></i>Loading...</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="profile-section-title"><i class="fa-solid fa-clock-rotate-left" style="color:var(--brand-blue)"></i> Activity History</div>
+                    <div class="profile-card" id="historyList">
+                        <div class="profile-empty"><i class="fa-regular fa-clock"></i>Loading...</div>
+                    </div>
+                </div>
+
+                <div class="logout-card" onclick="handleLogout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="viewer-overlay" id="viewerOverlay" onclick="handleOverlayClick(event)">
         <div class="viewer-sheet">
             <div class="viewer-header">
@@ -301,7 +402,7 @@
 
     <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, getDoc, setDoc, deleteDoc, doc, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const app = initializeApp(FIREBASE_CONFIG);
@@ -310,12 +411,20 @@
     window._db = db;
     window._col = collection;
     window._addDoc = addDoc;
+    window._getDocs = getDocs;
+    window._getDoc = getDoc;
+    window._setDoc = setDoc;
+    window._deleteDoc = deleteDoc;
+    window._doc = doc;
+    window._query = query;
+    window._where = where;
+    window._orderBy = orderBy;
     window._auth = auth;
 
     onAuthStateChanged(auth, (user) => {
         window.currentUser = user;
         if (typeof window.updateAuthUI === 'function') window.updateAuthUI(user);
-        
+
         // প্রথমবার ভিজিটে সাইনআপ পপআপ ট্রিগার (ইউজার লগইন না করা থাকলে)
         if (!user && !sessionStorage.getItem('initPopupShown')) {
             setTimeout(() => {
@@ -355,14 +464,51 @@
         return await addDoc(collection(db, "notes"), { ...data, uploadedAt: Date.now() });
     };
 
+    // ---- User profile (college ID) ----
+    window.getUserProfile = async function(uid) {
+        const ref = doc(db, "users", uid);
+        const snap = await getDoc(ref);
+        return snap.exists() ? snap.data() : null;
+    };
+    window.setUserProfile = async function(uid, data) {
+        const ref = doc(db, "users", uid);
+        await setDoc(ref, data, { merge: true });
+    };
+
+    // ---- My uploads ----
+    window.getMyUploads = async function(uid) {
+        const q = query(collection(db, "notes"), where("ownerId", "==", uid));
+        const snap = await getDocs(q);
+        const docs = [];
+        snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+        docs.sort((a,b) => (b.uploadedAt||0) - (a.uploadedAt||0));
+        return docs;
+    };
+    window.deleteMyUpload = async function(docId) {
+        await deleteDoc(doc(db, "notes", docId));
+    };
+
+    // ---- Activity history ----
+    window.logActivity = async function(uid, entry) {
+        await addDoc(collection(db, "users", uid, "history"), { ...entry, timestamp: Date.now() });
+    };
+    window.getHistory = async function(uid) {
+        const q = query(collection(db, "users", uid, "history"), orderBy("timestamp", "desc"));
+        const snap = await getDocs(q);
+        const docs = [];
+        snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+        return docs.slice(0, 25);
+    };
+
     loadDocs();</script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    
+
     <script>
     if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     let currentCategory = 'all', currentZoom = 1.0, pdfDoc = null, selectedFile = null;
+    let allDocsCache = [];
 
     function showToast(msg, type = '') {
         const t = document.getElementById('toast');
@@ -370,6 +516,12 @@
         t.innerHTML = msg;
         t.classList.add('show');
         setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str || '';
+        return div.innerHTML;
     }
 
     // ---- Authentication UI / Engine ----
@@ -381,7 +533,7 @@
         document.getElementById('loginTab').classList.toggle('active', mode === 'login');
         document.getElementById('authNameGroup').style.display = mode === 'signup' ? 'flex' : 'none';
         document.getElementById('forgotPasswordLink').style.display = mode === 'login' ? 'block' : 'none';
-        
+
         const btn = document.getElementById('authSubmitBtn');
         btn.disabled = false;
         btn.innerHTML = mode === 'login'
@@ -469,19 +621,9 @@
 
     async function handleLogout() {
         await window.authSignOut();
+        closeProfileSheet();
         showToast('<i class="fa-solid fa-check"></i> Logout হয়েছে', 'success');
     }
-
-    function toggleUserMenu() {
-        const d = document.getElementById('navUserDropdown');
-        if (d) d.classList.toggle('open');
-    }
-
-    document.addEventListener('click', function(e) {
-        const chip = document.getElementById('bottomUserChip');
-        const dropdown = document.getElementById('navUserDropdown');
-        if (dropdown && chip && !chip.contains(e.target)) dropdown.classList.remove('open');
-    });
 
     window.updateAuthUI = function(user) {
         const area = document.getElementById('bottomAuthArea');
@@ -489,14 +631,9 @@
             const name = user.displayName || (user.email ? user.email.split('@')[0] : 'User');
             const initials = name.trim().split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase();
             area.innerHTML = `
-                <button class="nav-item nav-user-chip" id="bottomUserChip" onclick="toggleUserMenu()">
+                <button class="nav-item nav-user-chip" id="bottomUserChip" onclick="openProfileSheet()">
                     <div class="user-avatar">${initials}</div>
                     <span>Profile</span>
-                    <div class="user-dropdown" id="navUserDropdown">
-                        <div class="user-dropdown-name">${name}</div>
-                        <div class="user-dropdown-email">${user.email || ''}</div>
-                        <button class="user-dropdown-logout" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-                    </div>
                 </button>`;
             document.getElementById('contributorName').value = name;
         } else {
@@ -507,6 +644,172 @@
                 </button>`;
         }
     };
+
+    // ---- Profile Sheet ----
+    let collegeIdSaved = '';
+
+    window.openProfileSheet = async function() {
+        const user = window.currentUser;
+        if (!user) { openAuthModal('login'); return; }
+
+        const name = user.displayName || (user.email ? user.email.split('@')[0] : 'User');
+        const initials = name.trim().split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase();
+        document.getElementById('profileAvatarLg').textContent = initials;
+        document.getElementById('profileNameLg').textContent = name;
+        document.getElementById('profileEmailLg').textContent = user.email || '';
+
+        document.getElementById('profileOverlay').classList.add('open');
+
+        // Reset sections to loading state
+        document.getElementById('myUploadsList').innerHTML = '<div class="profile-empty"><i class="fa-regular fa-folder-open"></i>Loading...</div>';
+        document.getElementById('historyList').innerHTML = '<div class="profile-empty"><i class="fa-regular fa-clock"></i>Loading...</div>';
+
+        // College ID
+        try {
+            const profile = await window.getUserProfile(user.uid);
+            collegeIdSaved = (profile && profile.collegeId) ? profile.collegeId : '';
+            renderCollegeId();
+        } catch (e) {
+            collegeIdSaved = '';
+            renderCollegeId();
+        }
+
+        // My uploads
+        try {
+            const uploads = await window.getMyUploads(user.uid);
+            renderMyUploads(uploads);
+        } catch (e) {
+            document.getElementById('myUploadsList').innerHTML = `<div class="profile-empty"><i class="fa-solid fa-triangle-exclamation"></i>${escapeHtml(e.message)}</div>`;
+        }
+
+        // History
+        try {
+            const history = await window.getHistory(user.uid);
+            renderHistory(history);
+        } catch (e) {
+            document.getElementById('historyList').innerHTML = `<div class="profile-empty"><i class="fa-solid fa-triangle-exclamation"></i>${escapeHtml(e.message)}</div>`;
+        }
+    };
+
+    window.closeProfileSheet = function() {
+        document.getElementById('profileOverlay').classList.remove('open');
+    };
+
+    window.handleProfileOverlayClick = function(e) {
+        if (e.target.id === 'profileOverlay') closeProfileSheet();
+    };
+
+    function renderCollegeId() {
+        const viewMode = document.getElementById('collegeIdViewMode');
+        const editMode = document.getElementById('collegeIdEditMode');
+        const valueEl = document.getElementById('collegeIdValue');
+        const inputEl = document.getElementById('collegeIdInput');
+
+        if (collegeIdSaved) {
+            valueEl.textContent = collegeIdSaved;
+            viewMode.style.display = 'block';
+            editMode.style.display = 'none';
+        } else {
+            inputEl.value = '';
+            viewMode.style.display = 'none';
+            editMode.style.display = 'block';
+        }
+    }
+
+    window.toggleCollegeIdEdit = function(showEdit) {
+        const viewMode = document.getElementById('collegeIdViewMode');
+        const editMode = document.getElementById('collegeIdEditMode');
+        const inputEl = document.getElementById('collegeIdInput');
+        if (showEdit) {
+            inputEl.value = collegeIdSaved;
+            viewMode.style.display = 'none';
+            editMode.style.display = 'block';
+        } else {
+            renderCollegeId();
+        }
+    };
+
+    window.saveCollegeId = async function() {
+        const user = window.currentUser;
+        if (!user) return;
+        const val = document.getElementById('collegeIdInput').value.trim();
+        const btn = document.getElementById('saveCollegeIdBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        try {
+            await window.setUserProfile(user.uid, { collegeId: val, name: user.displayName || '', email: user.email || '' });
+            collegeIdSaved = val;
+            renderCollegeId();
+            showToast('<i class="fa-solid fa-check"></i> College ID সেভ হয়েছে!', 'success');
+        } catch (e) {
+            showToast('<i class="fa-solid fa-triangle-exclamation"></i> ' + e.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Save';
+        }
+    };
+
+    function renderMyUploads(uploads) {
+        const wrap = document.getElementById('myUploadsList');
+        if (!uploads.length) {
+            wrap.innerHTML = '<div class="profile-empty"><i class="fa-regular fa-folder-open"></i>তুমি এখনো কোনো PDF আপলোড করো নি।</div>';
+            return;
+        }
+        wrap.innerHTML = uploads.map(d => `
+            <div class="my-upload-row">
+                <div class="my-upload-icon"><i class="fa-solid fa-file-pdf"></i></div>
+                <div class="my-upload-info">
+                    <div class="my-upload-title">${escapeHtml(d.title || 'Untitled')}</div>
+                    <div class="my-upload-meta">${escapeHtml(d.category || 'other')} · ${escapeHtml(d.fileSize || '')}</div>
+                </div>
+                <button class="my-upload-delete" onclick="confirmDeleteUpload('${d.id}', '${escapeHtml((d.title||'this file')).replace(/'/g, "\\'")}')">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    window.confirmDeleteUpload = async function(docId, title) {
+        if (!confirm(`"${title}" ডিলিট করতে চাও? এটা আর undo করা যাবে না।`)) return;
+        try {
+            await window.deleteMyUpload(docId);
+            showToast('<i class="fa-solid fa-check"></i> ফাইলটি ডিলিট হয়েছে', 'success');
+            await window.openProfileSheet();
+            loadDocsRefresh();
+        } catch (e) {
+            showToast('<i class="fa-solid fa-triangle-exclamation"></i> ' + e.message, 'error');
+        }
+    };
+
+    function renderHistory(history) {
+        const wrap = document.getElementById('historyList');
+        if (!history.length) {
+            wrap.innerHTML = '<div class="profile-empty"><i class="fa-regular fa-clock"></i>এখনো কোনো activity history নেই।</div>';
+            return;
+        }
+        wrap.innerHTML = history.map(h => {
+            const isDownload = h.type === 'download';
+            const icon = isDownload ? 'fa-solid fa-arrow-down' : 'fa-regular fa-eye';
+            const typeClass = isDownload ? 'download-type' : 'view-type';
+            const label = isDownload ? 'Downloaded' : 'Viewed';
+            const date = h.timestamp ? new Date(h.timestamp).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+            return `
+                <div class="history-row">
+                    <div class="history-icon ${typeClass}"><i class="${icon}"></i></div>
+                    <div class="history-info">
+                        <div class="history-title">${escapeHtml(h.title || 'Untitled')}</div>
+                        <div class="history-meta">${date}</div>
+                    </div>
+                    <span class="history-tag ${typeClass}">${label}</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function loadDocsRefresh() {
+        // re-trigger main feed load
+        location.reload();
+    }
 
     // ---- Upload Handlers ----
     function openUploadModal() {
@@ -559,13 +862,18 @@
         formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
         try {
-            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+            // PDF/raw files MUST use the "auto" (or "raw") resource type endpoint.
+            // "image/upload" rejects/breaks PDFs and produces unreachable URLs.
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, {
                 method: 'POST',
                 body: formData
             });
 
-            if (!response.ok) throw new Error('Network response not ok');
-            
+            if (!response.ok) {
+                const errBody = await response.json().catch(() => null);
+                throw new Error(errBody?.error?.message || 'Network response not ok');
+            }
+
             const clData = await response.json();
             const fileUrl = clData.secure_url;
             const fileSize = (selectedFile.size / (1024 * 1024)).toFixed(2) + " MB";
@@ -578,16 +886,17 @@
                 title: title,
                 category: category,
                 fileUrl: fileUrl,
-                fileSize: fileSize
+                fileSize: fileSize,
+                ownerId: window.currentUser ? window.currentUser.uid : null
             });
 
-            showToast('<i class="fa-solid fa-check"></i> হ্যান্ডনোট সফলভাবে শেয়ার করা হয়েছে!', 'success');
+            showToast('<i class="fa-solid fa-check"></i> হ্যান্ডনোট সফলভাবে শেয়ার করা হয়েছে!', 'success');
             closeUploadModal();
             setTimeout(() => location.reload(), 1200);
 
         } catch (error) {
             console.error(error);
-            showToast('<i class="fa-solid fa-triangle-exclamation"></i> Network error: ফাইল আপলোড করা যায়নি!', 'error');
+            showToast('<i class="fa-solid fa-triangle-exclamation"></i> Upload Error: ' + escapeHtml(error.message), 'error');
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Upload & Share';
@@ -596,6 +905,7 @@
 
     // ---- UI Feed & Filter Engine ----
     window.renderCards = function(docs) {
+        allDocsCache = docs;
         const feed = document.getElementById('dynamic-feed');
         if (!docs.length) {
             feed.innerHTML = '';
@@ -618,17 +928,17 @@
         card.innerHTML = `
             <div class="card-top-tags">
                 <span class="status-badge new-badge"><i class="fa-solid fa-file-pdf"></i> PDF</span>
-                <span class="file-size-tag">${doc.fileSize || 'Unknown'}</span>
+                <span class="file-size-tag">${escapeHtml(doc.fileSize || 'Unknown')}</span>
             </div>
-            <div class="course-title">${doc.title || 'Untitled'}</div>
+            <div class="course-title">${escapeHtml(doc.title || 'Untitled')}</div>
             <div class="instructor-meta">
-                <i class="fa-regular fa-user"></i> By: ${doc.contributor || 'Anonymous'}
+                <i class="fa-regular fa-user"></i> By: ${escapeHtml(doc.contributor || 'Anonymous')}
             </div>
             <div class="action-row">
-                <button class="btn-main-action btn-view" onclick="openPDFViewer('${doc.fileUrl}', '${doc.title.replace(/'/g, "\\'")}')">
+                <button class="btn-main-action btn-view" onclick="openPDFViewer('${doc.fileUrl}', '${escapeHtml(doc.title || 'Untitled').replace(/'/g, "\\'")}')">
                     <i class="fa-regular fa-eye"></i> View
                 </button>
-                <a href="${doc.fileUrl}" target="_blank" download="${doc.title}.pdf" class="btn-main-action btn-download-now">
+                <a href="${doc.fileUrl}" target="_blank" download="${escapeHtml(doc.title || 'document')}.pdf" class="btn-main-action btn-download-now" onclick="trackDownload('${escapeHtml(doc.title || 'Untitled').replace(/'/g, "\\'")}')">
                     <i class="fa-solid fa-arrow-down"></i> Download
                 </a>
             </div>
@@ -666,6 +976,19 @@
         applyFilters();
     };
 
+    // ---- Activity Tracking ----
+    window.trackDownload = function(title) {
+        if (window.currentUser) {
+            window.logActivity(window.currentUser.uid, { type: 'download', title: title }).catch(() => {});
+        }
+    };
+
+    function trackView(title) {
+        if (window.currentUser) {
+            window.logActivity(window.currentUser.uid, { type: 'view', title: title }).catch(() => {});
+        }
+    }
+
     // ---- PDF Render Core ----
     window.openPDFViewer = async function(url, title) {
         document.getElementById('viewerDocName').textContent = title;
@@ -674,12 +997,14 @@
         overlay.classList.add('open');
         body.innerHTML = '<div class="viewer-loading"><div class="spinner"></div><p style="color:white;font-size:0.85rem">Rendering PDF Pages...</p></div>';
 
+        trackView(title);
+
         try {
             const loadingTask = pdfjsLib.getDocument(url);
             pdfDoc = await loadingTask.promise;
             document.getElementById('pageCounter').textContent = `Pages: ${pdfDoc.numPages}`;
             body.innerHTML = '';
-            
+
             const maxPages = Math.min(pdfDoc.numPages, 4);
             for(let pageNum = 1; pageNum <= maxPages; pageNum++) {
                 const page = await pdfDoc.getPage(pageNum);
