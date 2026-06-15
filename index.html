@@ -875,12 +875,12 @@
             }
 
             const clData = await response.json();
-            // Cloudinary sometimes returns a PDF under the "image" resource type,
-            // whose /image/upload/ URL fails to render (ERR_INVALID_RESPONSE).
-            // Rewriting to /raw/upload/ serves the file correctly for viewing/downloading.
+            // Cloudinary stores the PDF under the "image" resource type. Its plain
+            // /image/upload/ URL fails (ERR_INVALID_RESPONSE / 404 on raw). Adding
+            // the fl_attachment flag forces Cloudinary to serve the raw PDF bytes.
             let fileUrl = clData.secure_url;
-            if (fileUrl && fileUrl.includes('/image/upload/')) {
-                fileUrl = fileUrl.replace('/image/upload/', '/raw/upload/');
+            if (fileUrl && fileUrl.includes('/image/upload/') && !fileUrl.includes('fl_attachment')) {
+                fileUrl = fileUrl.replace('/image/upload/', '/image/upload/fl_attachment/');
             }
             const fileSize = (selectedFile.size / (1024 * 1024)).toFixed(2) + " MB";
 
@@ -925,8 +925,12 @@
     };
 
     function normalizeFileUrl(url) {
-        if (url && url.includes('/image/upload/') && url.toLowerCase().includes('.pdf')) {
-            return url.replace('/image/upload/', '/raw/upload/');
+        if (url && url.includes('/image/upload/') && url.toLowerCase().includes('.pdf') && !url.includes('fl_attachment') && !url.includes('/raw/upload/')) {
+            return url.replace('/image/upload/', '/image/upload/fl_attachment/');
+        }
+        // Heal previously-broken /raw/upload/ rewrites back to /image/upload/fl_attachment/
+        if (url && url.includes('/raw/upload/') && url.toLowerCase().includes('.pdf')) {
+            return url.replace('/raw/upload/', '/image/upload/fl_attachment/');
         }
         return url;
     }
