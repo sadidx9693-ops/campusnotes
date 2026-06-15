@@ -875,7 +875,13 @@
             }
 
             const clData = await response.json();
-            const fileUrl = clData.secure_url;
+            // Cloudinary sometimes returns a PDF under the "image" resource type,
+            // whose /image/upload/ URL fails to render (ERR_INVALID_RESPONSE).
+            // Rewriting to /raw/upload/ serves the file correctly for viewing/downloading.
+            let fileUrl = clData.secure_url;
+            if (fileUrl && fileUrl.includes('/image/upload/')) {
+                fileUrl = fileUrl.replace('/image/upload/', '/raw/upload/');
+            }
             const fileSize = (selectedFile.size / (1024 * 1024)).toFixed(2) + " MB";
 
             document.getElementById('progressBar').style.width = '90%';
@@ -918,12 +924,21 @@
         applyFilters();
     };
 
+    function normalizeFileUrl(url) {
+        if (url && url.includes('/image/upload/') && url.toLowerCase().includes('.pdf')) {
+            return url.replace('/image/upload/', '/raw/upload/');
+        }
+        return url;
+    }
+
     function makeCard(doc) {
         const card = document.createElement('div');
         card.className = 'course-card';
         card.dataset.category = doc.category || 'other';
         card.dataset.title = (doc.title || '').toLowerCase();
         card.dataset.contributor = (doc.contributor || '').toLowerCase();
+
+        const fileUrl = normalizeFileUrl(doc.fileUrl);
 
         card.innerHTML = `
             <div class="card-top-tags">
@@ -935,10 +950,10 @@
                 <i class="fa-regular fa-user"></i> By: ${escapeHtml(doc.contributor || 'Anonymous')}
             </div>
             <div class="action-row">
-                <button class="btn-main-action btn-view" onclick="openPDFViewer('${doc.fileUrl}', '${escapeHtml(doc.title || 'Untitled').replace(/'/g, "\\'")}')">
+                <button class="btn-main-action btn-view" onclick="openPDFViewer('${fileUrl}', '${escapeHtml(doc.title || 'Untitled').replace(/'/g, "\\'")}')">
                     <i class="fa-regular fa-eye"></i> View
                 </button>
-                <a href="${doc.fileUrl}" target="_blank" download="${escapeHtml(doc.title || 'document')}.pdf" class="btn-main-action btn-download-now" onclick="trackDownload('${escapeHtml(doc.title || 'Untitled').replace(/'/g, "\\'")}')">
+                <a href="${fileUrl}" target="_blank" download="${escapeHtml(doc.title || 'document')}.pdf" class="btn-main-action btn-download-now" onclick="trackDownload('${escapeHtml(doc.title || 'Untitled').replace(/'/g, "\\'")}')">
                     <i class="fa-solid fa-arrow-down"></i> Download
                 </a>
             </div>
