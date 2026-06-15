@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CampusNotes — Educational Repository</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-global: #F8FAFC; --surface: #FFFFFF; --text-primary: #0F172A;
+            --text-secondary: #475569; --brand-blue: #2563EB; --brand-green: #10B981;
+            --border-light: #E2E8F0; --radius-main: 16px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-global); color: var(--text-primary); padding-bottom: 4rem; }
+
+        header { background: var(--surface); padding: 1.25rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 1.25rem; font-weight: 700; color: var(--brand-blue); display: flex; align-items: center; gap: 0.5rem; }
+        .logo span { color: var(--text-primary); }
+        .upload-nav-btn { background: var(--brand-blue); color: white; padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; cursor: pointer; border: none; }
+
+        .hero-banner { background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); padding: 2rem 1rem; text-align: center; border-bottom: 1px solid var(--border-light); }
+        .hero-banner h1 { font-size: 1.65rem; font-weight: 700; line-height: 1.3; margin-bottom: 0.5rem; }
+        .hero-banner p { font-size: 0.9rem; color: var(--text-secondary); max-width: 90%; margin: 0 auto 1.25rem; }
+
+        .search-bar-wrap { max-width: 420px; margin: 0 auto; position: relative; }
+        .search-bar-wrap i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 0.9rem; }
+        .search-input { width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border-radius: 50px; border: 1px solid var(--border-light); font-size: 0.9rem; outline: none; background: white; color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .search-input:focus { border-color: var(--brand-blue); }
+
+        .app-container { padding: 1.5rem 1rem; }
+
+        .category-scroll-container { display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 1rem; margin-bottom: 1.5rem; scrollbar-width: none; }
+        .category-scroll-container::-webkit-scrollbar { display: none; }
+        .category-chip { background: var(--surface); padding: 0.6rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); border: 1px solid var(--border-light); white-space: nowrap; cursor: pointer; transition: all 0.2s ease; user-select: none; }
+        .category-chip.active { background: var(--brand-blue); color: white; border-color: var(--brand-blue); }
+
+        .grid-heading { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .grid-heading .count { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; }
+        .resource-grid { display: flex; flex-direction: column; gap: 1rem; }
+
+        .course-card { background: var(--surface); border-radius: var(--radius-main); border: 1px solid var(--border-light); padding: 1.25rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 0.75rem; transition: transform 0.2s cubic-bezier(0.16,1,0.3,1); }
+        .course-card:active { transform: scale(0.98); }
+        .course-card.hidden { display: none; }
+        .card-top-tags { display: flex; justify-content: space-between; align-items: center; }
+        .status-badge { background: #ECFDF5; color: var(--brand-green); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 0.3rem; }
+        .status-badge.new-badge { background: #EFF6FF; color: var(--brand-blue); }
+        .file-size-tag { font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; }
+        .course-title { font-size: 1.05rem; font-weight: 600; line-height: 1.4; }
+        .instructor-meta { font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem; border-bottom: 1px solid #F1F5F9; padding-bottom: 0.75rem; }
+        .action-row { display: flex; gap: 0.75rem; margin-top: 0.25rem; }
+        .btn-main-action { flex: 1; padding: 0.65rem; border-radius: 10px; text-align: center; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.4rem; cursor: pointer; border: none; transition: all 0.2s ease; }
+        .btn-view { background: #F1F5F9; color: var(--text-primary); border: 1px solid var(--border-light); }
+        .btn-download-now { background: var(--brand-blue); color: white; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(4px); }
+        .modal-overlay.open { display: flex; }
+        .modal-sheet { background: white; border-radius: 20px; padding: 1.75rem; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 1rem; animation: popIn 0.3s cubic-bezier(0.16,1,0.3,1); max-height: 90vh; overflow-y: auto; }
+        @keyframes popIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-title { font-size: 1.1rem; font-weight: 700; }
+        .modal-subtitle { font-size: 0.85rem; color: var(--text-secondary); margin-top: -0.5rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+        .form-label { font-size: 0.82rem; font-weight: 600; }
+        .form-input, .form-select { padding: 0.7rem 1rem; border: 1px solid var(--border-light); border-radius: 10px; font-size: 0.88rem; outline: none; color: var(--text-primary); background: #F8FAFC; }
+        .form-input:focus, .form-select:focus { border-color: var(--brand-blue); background: white; }
+        .file-drop-zone { border: 2px dashed var(--border-light); border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; color: var(--text-secondary); font-size: 0.85rem; }
+        .file-drop-zone i { font-size: 1.5rem; display: block; margin-bottom: 0.5rem; }
+        .file-drop-zone.file-selected { border-color: var(--brand-green); background: #ECFDF5; color: #065F46; }
+        .upload-progress-wrap { background: #F1F5F9; border-radius: 8px; height: 6px; overflow: hidden; }
+        .upload-progress-bar { height: 100%; background: var(--brand-blue); border-radius: 8px; width: 0%; transition: width 0.3s ease; }
+        .upload-progress-label { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.3rem; text-align: center; }
+        .modal-actions { display: flex; gap: 0.75rem; }
+        .btn-cancel { flex: 1; padding: 0.75rem; border-radius: 10px; border: 1px solid var(--border-light); background: #F1F5F9; color: var(--text-primary); font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+        .btn-submit { flex: 2; padding: 0.75rem; border-radius: 10px; border: none; background: var(--brand-blue); color: white; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+        .btn-submit:disabled { background: #94A3B8; cursor: not-allowed; }
+
+        .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-secondary); display: none; }
+        .empty-state i { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.4; display: block; }
+
+        .viewer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999; display: none; align-items: flex-end; backdrop-filter: blur(4px); }
+        .viewer-overlay.open { display: flex; }
+        .viewer-sheet { background: #0F172A; width: 100%; height: 95vh; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; overflow: hidden; animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .viewer-header { padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); background: #1E293B; flex-shrink: 0; }
+        .viewer-title-area { flex: 1; overflow: hidden; margin-right: 1rem; }
+        .viewer-doc-name { font-size: 0.95rem; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .viewer-doc-meta { font-size: 0.75rem; color: #94A3B8; margin-top: 0.2rem; }
+        .viewer-close-btn { background: rgba(255,255,255,0.1); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .viewer-toolbar { padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 0.75rem; background: #1E293B; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
+        .toolbar-btn { background: rgba(255,255,255,0.08); border: none; color: #CBD5E1; padding: 0.45rem 0.85rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; }
+        .toolbar-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+        .page-counter { margin-left: auto; font-size: 0.8rem; color: #64748B; font-weight: 500; }
+        .viewer-body { flex: 1; overflow-y: auto; background: #1a1a2e; display: flex; flex-direction: column; align-items: center; padding: 1.5rem 0.75rem; gap: 1rem; scrollbar-width: thin; scrollbar-color: #334155 transparent; }
+        .viewer-body::-webkit-scrollbar { width: 4px; }
+        .viewer-body::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        canvas.pdf-page-canvas { display: block; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); max-width: 100%; background: white; }
+        .viewer-loading { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: #64748B; }
+        .spinner { width: 40px; height: 40px; border: 3px solid #334155; border-top-color: var(--brand-blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%) translateY(20px); background: #0F172A; color: white; padding: 0.75rem 1.25rem; border-radius: 50px; font-size: 0.85rem; font-weight: 500; z-index: 9999; opacity: 0; transition: all 0.3s ease; white-space: nowrap; display: flex; align-items: center; gap: 0.5rem; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.success { background: #065F46; }
+        .toast.error { background: #7F1D1D; }
+
+        #hidden-file-picker { display: none; }
+    </style>
+</head>
+<body>
+
+<script>
+    const CLOUDINARY_CLOUD_NAME = "dshqqlliz";
+    const CLOUDINARY_UPLOAD_PRESET = "campusnotes_preset";
+
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyBBpIvnvEdlZ1CCXP9s0gD6plqz2c-Na7Y",
+        authDomain: "campusnotes-f6535.firebaseapp.com",
+        projectId: "campusnotes-f6535",
+        storageBucket: "campusnotes-f6535.firebasestorage.app",
+        messagingSenderId: "309480823621",
+        appId: "1:309480823621:web:d908650c973838b613bc2c"
+    };
+</script>
+
+<header>
+    <div class="logo"><i class="fa-solid fa-graduation-cap"></i> Campus<span>Hub</span></div>
+    <button class="upload-nav-btn" onclick="openUploadModal()"><i class="fa-solid fa-plus"></i> Upload</button>
+</header>
+
+<div class="hero-banner">
+    <h1>Discover Academic Handnotes</h1>
+    <p>Access structured PDF resources curated by top university students.</p>
+    <div class="search-bar-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search notes, subjects..." oninput="applyFilters()">
+    </div>
+</div>
+
+<div class="app-container">
+    <div class="category-scroll-container">
+        <div class="category-chip active" data-category="all" onclick="selectChip(this)">All Documents</div>
+        <div class="category-chip" data-category="physics" onclick="selectChip(this)">Physics</div>
+        <div class="category-chip" data-category="mathematics" onclick="selectChip(this)">Mathematics</div>
+        <div class="category-chip" data-category="chemistry" onclick="selectChip(this)">Chemistry</div>
+        <div class="category-chip" data-category="computer" onclick="selectChip(this)">Computer Science</div>
+        <div class="category-chip" data-category="other" onclick="selectChip(this)">Other</div>
+    </div>
+
+    <div class="grid-heading">
+        Featured Resources
+        <span class="count" id="resultCount">Loading...</span>
+    </div>
+
+    <div class="resource-grid" id="dynamic-feed">
+        <div style="text-align:center; padding:3rem; color:#94A3B8;">
+            <div class="spinner" style="margin:0 auto 1rem; border-top-color:#2563EB;"></div>
+            <p style="font-size:0.85rem">Loading documents...</p>
+        </div>
+    </div>
+
+    <div class="empty-state" id="emptyState">
+        <i class="fa-solid fa-folder-open"></i>
+        <p>No documents found.<br>Try a different search or category.</p>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal-overlay" id="uploadModal">
+    <div class="modal-sheet">
+        <div>
+            <div class="modal-title"><i class="fa-solid fa-upload" style="color:var(--brand-blue)"></i> Upload PDF Note</div>
+            <div class="modal-subtitle" style="margin-top:0.4rem">Share your notes with everyone</div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">তোমার নাম *</label>
+            <input type="text" class="form-input" id="contributorName" placeholder="e.g. Safayat Khan">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Subject / Title *</label>
+            <input type="text" class="form-input" id="docTitle" placeholder="e.g. Physics: Vector Notes">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Category *</label>
+            <select class="form-select" id="docCategory">
+                <option value="physics">Physics</option>
+                <option value="mathematics">Mathematics</option>
+                <option value="chemistry">Chemistry</option>
+                <option value="computer">Computer Science</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">PDF File *</label>
+            <div class="file-drop-zone" id="dropZone" onclick="document.getElementById('hidden-file-picker').click()">
+                <i class="fa-solid fa-file-pdf"></i>
+                <span id="dropZoneText">Tap to select PDF file</span>
+            </div>
+        </div>
+        <div id="progressSection" style="display:none">
+            <div class="upload-progress-wrap">
+                <div class="upload-progress-bar" id="progressBar"></div>
+            </div>
+            <div class="upload-progress-label" id="progressLabel">Uploading... 0%</div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeUploadModal()">Cancel</button>
+            <button class="btn-submit" id="submitBtn" onclick="handleUpload()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload & Share</button>
+        </div>
+    </div>
+</div>
+
+<!-- PDF Viewer -->
+<div class="viewer-overlay" id="viewerOverlay" onclick="handleOverlayClick(event)">
+    <div class="viewer-sheet">
+        <div class="viewer-header">
+            <div class="viewer-title-area">
+                <div class="viewer-doc-name" id="viewerDocName">Document</div>
+                <div class="viewer-doc-meta" id="viewerDocMeta">PDF</div>
+            </div>
+            <button class="viewer-close-btn" onclick="closeViewer()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="viewer-toolbar">
+            <button class="toolbar-btn" onclick="changeZoom(-0.2)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+            <button class="toolbar-btn" onclick="changeZoom(0.2)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+            <button class="toolbar-btn" onclick="fitPage()"><i class="fa-solid fa-compress"></i> Fit</button>
+            <span class="page-counter" id="pageCounter"></span>
+        </div>
+        <div class="viewer-body" id="viewerBody">
+            <div class="viewer-loading"><div class="spinner"></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="hidden-file-picker" accept=".pdf">
+
+<!-- Firebase -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const db = getFirestore(app);
+    window._db = db;
+    window._col = collection;
+    window._addDoc = addDoc;
+
+    async function loadDocs() {
+        try {
+            const q = query(collection(db, "notes"), orderBy("uploadedAt", "desc"));
+            const snap = await getDocs(q);
+            const docs = [];
+            snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+            window.renderCards(docs);
+        } catch (e) {
+            document.getElementById('dynamic-feed').innerHTML = `
+                <div style="text-align:center;padding:2rem;color:#EF4444">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size:2rem;display:block;margin-bottom:0.75rem"></i>
+                    <p style="font-size:0.85rem">Error: ${e.message}</p>
+                </div>`;
+        }
+    }
+
+    window.saveDoc = async function(data) {
+        return await addDoc(collection(db, "notes"), { ...data, uploadedAt: Date.now() });
+    };
+
+    loadDocs();
+</script>
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<script>
+    if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    let currentCategory = 'all', currentZoom = 1.0, pdfDoc = null, selectedFile = null;
+
+    function showToast(msg, type = '') {
+        const t = document.getElementById('toast');
+        t.className = 'toast ' + type;
+        t.innerHTML = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    window.renderCards = function(docs) {
+        const feed = document.getElementById('dynamic-feed');
+        if (!docs.length) {
+            feed.innerHTML = '';
+            document.getElementById('emptyState').style.display = 'block';
+            document.getElementById('resultCount').textContent = '0 documents';
+            return;
+        }
+        feed.innerHTML = '';
+        docs.forEach(doc => feed.appendChild(makeCard(doc)));
+        applyFilters();
+    };
+
+    function makeCard(doc) {
+        const card = document.createElement('div');
+        card.className = 'course-card';
+        card.dataset.category = doc.category || 'other';
+        card.dataset.title = doc.title || '';
+        card.dataset.contributor = doc.contributor || '';
+        const isNew = Date.now() - doc.uploadedAt < 86400000 * 3;
+        const badge = isNew
+            ? `<div class="status-badge new-badge"><i class="fa-solid fa-circle" style="font-size:0.4rem"></i> New</div>`
+            : `<div class="status-badge"><i class="fa-solid fa-circle" style="font-size:0.4rem"></i> Verified</div>`;
+        const safeTitle = (doc.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safeUrl = (doc.cloudinaryUrl || '').replace(/'/g, "\\'");
+        card.innerHTML = `
+            <div class="card-top-tags">${badge}<div class="file-size-tag">${doc.fileSize || '—'} • PDF</div></div>
+            <div class="course-title">${doc.title || 'Untitled'}</div>
+            <div class="instructor-meta"><i class="fa-regular fa-user"></i> Contributed by ${doc.contributor || 'Anonymous'}</div>
+            <div class="action-row">
+                <button class="btn-main-action btn-view" onclick="openViewer('${safeTitle}','${doc.fileSize||''}','${safeUrl}')"><i class="fa-regular fa-eye"></i> Read</button>
+                <a href="${doc.cloudinaryUrl||'#'}" target="_blank" class="btn-main-action btn-download-now"><i class="fa-solid fa-circle-arrow-down"></i> Download</a>
+            </div>`;
+        return card;
+    }
+
+    function selectChip(el) {
+        document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        currentCategory = el.dataset.category;
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const q = document.getElementById('searchInput').value.toLowerCase().trim();
+        const cards = document.querySelectorAll('#dynamic-feed .course-card');
+        let count = 0;
+        cards.forEach(card => {
+            const cm = currentCategory === 'all' || card.dataset.category === currentCategory;
+            const sm = !q || card.dataset.title.toLowerCase().includes(q) || card.dataset.contributor.toLowerCase().includes(q);
+            if (cm && sm) { card.classList.remove('hidden'); count++; } else card.classList.add('hidden');
+        });
+        document.getElementById('resultCount').textContent = count + ' document' + (count !== 1 ? 's' : '');
+        document.getElementById('emptyState').style.display = count === 0 && cards.length > 0 ? 'block' : 'none';
+    }
+
+    function openUploadModal() { document.getElementById('uploadModal').classList.add('open'); }
+
+    function closeUploadModal() {
+        document.getElementById('uploadModal').classList.remove('open');
+        selectedFile = null;
+        document.getElementById('dropZoneText').textContent = 'Tap to select PDF file';
+        document.getElementById('dropZone').className = 'file-drop-zone';
+        document.getElementById('progressSection').style.display = 'none';
+        document.getElementById('progressBar').style.width = '0%';
+        document.getElementById('submitBtn').disabled = false;
+        document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Upload & Share';
+        document.getElementById('hidden-file-picker').value = '';
+    }
+
+    document.getElementById('hidden-file-picker').addEventListener('change', function() {
+        if (!this.files.length) return;
+        const file = this.files[0];
+        if (file.type !== 'application/pdf') { showToast('<i class="fa-solid fa-xmark"></i> Only PDF allowed', 'error'); return; }
+        selectedFile = file;
+        document.getElementById('dropZoneText').textContent = '✅ ' + file.name;
+        document.getElementById('dropZone').className = 'file-drop-zone file-selected';
+    });
+
+    async function handleUpload() {
+        const name = document.getElementById('contributorName').value.trim();
+        const title = document.getElementById('docTitle').value.trim();
+        const category = document.getElementById('docCategory').value;
+        if (!name || !title) { showToast('<i class="fa-solid fa-xmark"></i> নাম ও title দাও', 'error'); return; }
+        if (!selectedFile) { showToast('<i class="fa-solid fa-xmark"></i> PDF select করো', 'error'); return; }
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+        document.getElementById('progressSection').style.display = 'block';
+
+        try {
+            const url = await uploadToCloudinary(selectedFile);
+            const sizeLabel = (selectedFile.size / (1024 * 1024)).toFixed(1) + ' MB';
+            document.getElementById('progressLabel').textContent = 'Saving to database...';
+            await window.saveDoc({ title, contributor: name, category, fileSize: sizeLabel, cloudinaryUrl: url, fileName: selectedFile.name });
+            showToast('<i class="fa-solid fa-check"></i> সফলভাবে upload হয়েছে!', 'success');
+            closeUploadModal();
+            setTimeout(() => location.reload(), 1500);
+        } catch (err) {
+            showToast('<i class="fa-solid fa-xmark"></i> ' + err.message, 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Upload & Share';
+        }
+    }
+
+    function uploadToCloudinary(file) {
+        return new Promise((resolve, reject) => {
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/raw/upload`);
+            xhr.upload.onprogress = e => {
+                if (e.lengthComputable) {
+                    const pct = Math.round(e.loaded / e.total * 100);
+                    document.getElementById('progressBar').style.width = pct + '%';
+                    document.getElementById('progressLabel').textContent = `Uploading... ${pct}%`;
+                }
+            };
+            xhr.onload = () => {
+                if (xhr.status === 200) resolve(JSON.parse(xhr.responseText).secure_url);
+                else reject(new Error('Cloudinary upload failed'));
+            };
+            xhr.onerror = () => reject(new Error('Network error'));
+            xhr.send(fd);
+        });
+    }
+
+    async function openViewer(title, size, url) {
+        document.getElementById('viewerDocName').textContent = title;
+        document.getElementById('viewerDocMeta').textContent = size ? size + ' • PDF' : 'PDF';
+        document.getElementById('viewerOverlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+        if (url) {
+            document.getElementById('viewerBody').innerHTML = '<div class="viewer-loading"><div class="spinner"></div><p style="color:#64748B;font-size:0.85rem;margin-top:0.5rem">Loading...</p></div>';
+            await loadPDF(url);
+        }
+    }
+
+    async function loadPDF(url) {
+        try {
+            pdfDoc = await pdfjsLib.getDocument(url).promise;
+            currentZoom = calcFitZoom(await pdfDoc.getPage(1));
+            await renderAllPages();
+            document.getElementById('pageCounter').textContent = pdfDoc.numPages + ' pages';
+        } catch (e) {
+            document.getElementById('viewerBody').innerHTML = `<div style="color:#EF4444;text-align:center;padding:2rem"><i class="fa-solid fa-triangle-exclamation" style="font-size:2rem;display:block;margin-bottom:1rem"></i><p>${e.message}</p></div>`;
+        }
+    }
+
+    function calcFitZoom(page) { const vp = page.getViewport({ scale: 1 }); return Math.min(window.innerWidth - 32, 600) / vp.width; }
+
+    async function renderAllPages() {
+        const body = document.getElementById('viewerBody');
+        body.innerHTML = '';
+        for (let i = 1; i <= pdfDoc.numPages; i++) {
+            const page = await pdfDoc.getPage(i);
+            const vp = page.getViewport({ scale: currentZoom });
+            const canvas = document.createElement('canvas');
+            canvas.className = 'pdf-page-canvas';
+            canvas.width = vp.width; canvas.height = vp.height;
+            body.appendChild(canvas);
+            await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+        }
+    }
+
+    async function changeZoom(d) {
+        if (!pdfDoc) return;
+        currentZoom = Math.max(0.4, Math.min(3.0, currentZoom + d));
+        document.getElementById('viewerBody').innerHTML = '<div class="viewer-loading"><div class="spinner"></div></div>';
+        await renderAllPages();
+    }
+
+    async function fitPage() {
+        if (!pdfDoc) return;
+        currentZoom = calcFitZoom(await pdfDoc.getPage(1));
+        document.getElementById('viewerBody').innerHTML = '<div class="viewer-loading"><div class="spinner"></div></div>';
+        await renderAllPages();
+    }
+
+    function closeViewer() { document.getElementById('viewerOverlay').classList.remove('open'); document.body.style.overflow = ''; pdfDoc = null; }
+    function handleOverlayClick(e) { if (e.target === document.getElementById('viewerOverlay')) closeViewer(); }
+</script>
+</body>
+</html>
