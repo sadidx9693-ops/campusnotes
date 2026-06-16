@@ -174,11 +174,9 @@
 
         .logout-card { background: #FEF2F2; border: 1px solid #FECACA; border-radius: 14px; padding: 0.9rem 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; color: #B91C1C; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
     </style></head><body><script>
-    // CLOUDINARY CONFIGURATION 
-    const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dgo6g9w6u/image/upload";
-    const CLOUDINARY_UPLOAD_PRESET = "unsigned_preset";
+    const CLOUDINARY_CLOUD_NAME = "dshqqlliz";
+    const CLOUDINARY_UPLOAD_PRESET = "campusnotes_preset";
 
-    // FIREBASE CONFIGURATION
     const FIREBASE_CONFIG = {
         apiKey: "AIzaSyBBpIvnvEdlZ1CCXP9s0gD6plqz2c-Na7Y",
         authDomain: "campusnotes-f6535.firebaseapp.com",
@@ -412,22 +410,13 @@
     const auth = getAuth(app);
 
     window._db = db;
-    window._col = collection;
-    window._addDoc = addDoc;
-    window._getDocs = getDocs;
-    window._getDoc = getDoc;
-    window._setDoc = setDoc;
-    window._deleteDoc = deleteDoc;
-    window._doc = doc;
-    window._query = query;
-    window._where = where;
-    window._orderBy = orderBy;
     window._auth = auth;
 
     onAuthStateChanged(auth, (user) => {
         window.currentUser = user;
         if (typeof window.updateAuthUI === 'function') window.updateAuthUI(user);
 
+        // প্রথমবার ভিজিটে সাইনআপ পপআপ ট্রিগার (ইউজার লগইন না করা থাকলে)
         if (!user && !sessionStorage.getItem('initPopupShown')) {
             setTimeout(() => {
                 openAuthModal('signup');
@@ -466,6 +455,7 @@
         return await addDoc(collection(db, "notes"), { ...data, uploadedAt: Date.now() });
     };
 
+    // ---- User profile (college ID) ----
     window.getUserProfile = async function(uid) {
         const ref = doc(db, "users", uid);
         const snap = await getDoc(ref);
@@ -476,6 +466,7 @@
         await setDoc(ref, data, { merge: true });
     };
 
+    // ---- My uploads ----
     window.getMyUploads = async function(uid) {
         const q = query(collection(db, "notes"), where("ownerId", "==", uid));
         const snap = await getDocs(q);
@@ -488,6 +479,7 @@
         await deleteDoc(doc(db, "notes", docId));
     };
 
+    // ---- Activity history ----
     window.logActivity = async function(uid, entry) {
         await addDoc(collection(db, "users", uid, "history"), { ...entry, timestamp: Date.now() });
     };
@@ -507,7 +499,6 @@
     if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     let currentCategory = 'all', currentZoom = 1.0, pdfDoc = null, selectedFile = null;
-    let allDocsCache = [];
 
     function showToast(msg, type = '') {
         const t = document.getElementById('toast');
@@ -523,6 +514,7 @@
         return div.innerHTML;
     }
 
+    // ---- Authentication UI / Engine ----
     let authMode = 'signup';
 
     function switchAuthTab(mode) {
@@ -643,6 +635,7 @@
         }
     };
 
+    // ---- Profile Sheet ----
     let collegeIdSaved = '';
 
     window.openProfileSheet = async function() {
@@ -657,9 +650,11 @@
 
         document.getElementById('profileOverlay').classList.add('open');
 
+        // Reset sections to loading state
         document.getElementById('myUploadsList').innerHTML = '<div class="profile-empty"><i class="fa-regular fa-folder-open"></i>Loading...</div>';
         document.getElementById('historyList').innerHTML = '<div class="profile-empty"><i class="fa-regular fa-clock"></i>Loading...</div>';
 
+        // College ID
         try {
             const profile = await window.getUserProfile(user.uid);
             collegeIdSaved = (profile && profile.collegeId) ? profile.collegeId : '';
@@ -669,6 +664,7 @@
             renderCollegeId();
         }
 
+        // My uploads
         try {
             const uploads = await window.getMyUploads(user.uid);
             renderMyUploads(uploads);
@@ -676,6 +672,7 @@
             document.getElementById('myUploadsList').innerHTML = `<div class="profile-empty"><i class="fa-solid fa-triangle-exclamation"></i>${escapeHtml(e.message)}</div>`;
         }
 
+        // History
         try {
             const history = await window.getHistory(user.uid);
             renderHistory(history);
@@ -768,7 +765,7 @@
             await window.deleteMyUpload(docId);
             showToast('<i class="fa-solid fa-check"></i> ফাইলটি ডিলিট হয়েছে', 'success');
             await window.openProfileSheet();
-            loadDocsRefresh();
+            location.reload();
         } catch (e) {
             showToast('<i class="fa-solid fa-triangle-exclamation"></i> ' + e.message, 'error');
         }
@@ -799,10 +796,7 @@
         }).join('');
     }
 
-    function loadDocsRefresh() {
-        location.reload();
-    }
-
+    // ---- Upload Handlers ----
     function openUploadModal() {
         if(!window.currentUser) {
             showToast('<i class="fa-solid fa-lock"></i> আপলোড করতে প্রথমে Login করো!', 'error');
@@ -830,7 +824,6 @@
         }
     });
 
-    // CLOUDINARY FILE UPLOAD MANAGEMENT
     async function handleUpload() {
         const contributor = document.getElementById('contributorName').value.trim();
         const title = document.getElementById('docTitle').value.trim();
@@ -845,67 +838,56 @@
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
         document.getElementById('progressSection').style.display = 'block';
+        document.getElementById('progressBar').style.width = '50%';
+        document.getElementById('progressLabel').innerText = 'Firebase Storage-এ ফাইল পাঠানো হচ্ছে...';
 
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+        try {
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            formData.append('resource_type', 'raw');
 
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", CLOUDINARY_URL, true);
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/raw/upload`, {
+                method: 'POST',
+                body: formData
+            });
 
-        xhr.upload.onprogress = function(e) {
-            if (e.lengthComputable) {
-                const percentage = Math.round((e.loaded / e.total) * 100);
-                document.getElementById('progressBar').style.width = percentage + '%';
-                document.getElementById('progressLabel').innerText = `Uploading to Cloudinary... ${percentage}%`;
+            if (!response.ok) {
+                const errBody = await response.json().catch(() => null);
+                throw new Error(errBody?.error?.message || 'Upload failed');
             }
-        };
 
-        xhr.onload = async function() {
-            if (xhr.status === 200) {
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    const rawCloudinaryUrl = response.secure_url;
-                    
-                    // Cloudinary PDF Attachment conversion trick
-                    // Forces response behavior to deliver active file directly instead of trying to render it inside an image tag
-                    const secureDownloadUrl = rawCloudinaryUrl.replace('/upload/', '/upload/fl_attachment/');
-                    const fileSize = (selectedFile.size / (1024 * 1024)).toFixed(2) + " MB";
+            const clData = await response.json();
+            const fileUrl = clData.secure_url;
+            const fileSize = (selectedFile.size / (1024 * 1024)).toFixed(2) + " MB";
 
-                    document.getElementById('progressLabel').innerText = 'Saving data to Firestore...';
+            document.getElementById('progressBar').style.width = '90%';
+            document.getElementById('progressLabel').innerText = 'Firestore-এ তথ্য সেভ হচ্ছে...';
 
-                    await window.saveDoc({
-                        contributor: contributor,
-                        title: title,
-                        category: category,
-                        fileUrl: secureDownloadUrl,
-                        fileSize: fileSize,
-                        ownerId: window.currentUser ? window.currentUser.uid : null
-                    });
+            await window.saveDoc({
+                contributor: contributor,
+                title: title,
+                category: category,
+                fileUrl: fileUrl,
+                fileSize: fileSize,
+                ownerId: window.currentUser ? window.currentUser.uid : null
+            });
 
-                    showToast('<i class="fa-solid fa-check"></i> হ্যান্ডনোট সফলভাবে আপলোড হয়েছে!', 'success');
-                    closeUploadModal();
-                    setTimeout(() => location.reload(), 1200);
-                } catch (err) {
-                    showToast('<i class="fa-solid fa-triangle-exclamation"></i> Error processing server logs.', 'error');
-                    submitBtn.disabled = false;
-                }
-            } else {
-                showToast('<i class="fa-solid fa-triangle-exclamation"></i> Cloudinary Upload failed.', 'error');
-                submitBtn.disabled = false;
-            }
-        };
+            showToast('<i class="fa-solid fa-check"></i> হ্যান্ডনোট সফলভাবে শেয়ার করা হয়েছে!', 'success');
+            closeUploadModal();
+            setTimeout(() => location.reload(), 1200);
 
-        xhr.onerror = function() {
-            showToast('<i class="fa-solid fa-network-wired"></i> Network error during upload.', 'error');
+        } catch (error) {
+            console.error(error);
+            showToast('<i class="fa-solid fa-triangle-exclamation"></i> Upload Error: ' + escapeHtml(error.message), 'error');
+        } finally {
             submitBtn.disabled = false;
-        };
-
-        xhr.send(formData);
+            submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Upload & Share';
+        }
     }
 
+    // ---- UI Feed & Filter Engine ----
     window.renderCards = function(docs) {
-        allDocsCache = docs;
         const feed = document.getElementById('dynamic-feed');
         if (!docs.length) {
             feed.innerHTML = '';
@@ -925,12 +907,6 @@
         card.dataset.title = (doc.title || '').toLowerCase();
         card.dataset.contributor = (doc.contributor || '').toLowerCase();
 
-        // Safety fallback logic fallback ensuring 'fl_attachment' exists inside legacy links
-        let fileUrl = doc.fileUrl;
-        if (fileUrl.includes('cloudinary.com') && !fileUrl.includes('fl_attachment')) {
-            fileUrl = fileUrl.replace('/upload/', '/upload/fl_attachment/');
-        }
-
         card.innerHTML = `
             <div class="card-top-tags">
                 <span class="status-badge new-badge"><i class="fa-solid fa-file-pdf"></i> PDF</span>
@@ -941,10 +917,10 @@
                 <i class="fa-regular fa-user"></i> By: ${escapeHtml(doc.contributor || 'Anonymous')}
             </div>
             <div class="action-row">
-                <button class="btn-main-action btn-view" onclick="openPDFViewer('${fileUrl}', '${escapeHtml(doc.title || 'Untitled').replace(/'/g, "\\'")}')">
+                <button class="btn-main-action btn-view" onclick="openPDFViewer('${doc.fileUrl}', '${escapeHtml(doc.title || 'Untitled').replace(/'/g, "\\'")}')">
                     <i class="fa-regular fa-eye"></i> View
                 </button>
-                <a href="${fileUrl}" download="${escapeHtml(doc.title || 'document')}.pdf" class="btn-main-action btn-download-now" onclick="trackDownload('${escapeHtml(doc.title || 'Untitled').replace(/'/g, "\\'")}')">
+                <a href="${doc.fileUrl}" target="_blank" download="${escapeHtml(doc.title || 'document')}.pdf" class="btn-main-action btn-download-now" onclick="trackDownload('${escapeHtml(doc.title || 'Untitled').replace(/'/g, "\\'")}')">
                     <i class="fa-solid fa-arrow-down"></i> Download
                 </a>
             </div>
@@ -982,6 +958,7 @@
         applyFilters();
     };
 
+    // ---- Activity Tracking ----
     window.trackDownload = function(title) {
         if (window.currentUser) {
             window.logActivity(window.currentUser.uid, { type: 'download', title: title }).catch(() => {});
@@ -994,6 +971,7 @@
         }
     }
 
+    // ---- PDF Render Core ----
     window.openPDFViewer = async function(url, title) {
         document.getElementById('viewerDocName').textContent = title;
         const overlay = document.getElementById('viewerOverlay');
@@ -1025,8 +1003,7 @@
             console.error(e);
             body.innerHTML = `<div style="color:#FDA4AF;padding:2rem;text-align:center;">
                 <i class="fa-solid fa-circle-exclamation" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i>
-                <p>PDF প্রিভিউ লোড হতে সমস্যা হচ্ছে। সরাসরি বোতাম চেপে ফাইলটি ফ্রিতে ডাউনলোড করে দেখতে পারেন।</p>
-                <a href="${url}" download="${escapeHtml(title)}.pdf" class="btn-main-action btn-download-now" style="margin-top:1rem; max-width:200px; display:inline-flex;">📥 সরাসরি ডাউনলোড করুন</a>
+                <p>প্রিভিউ লোড করা যায়নি। আপনি সরাসরি 'Download' বোতাম চেপে ফাইলটি পেতে পারেন।</p>
             </div>`;
         }
     };
